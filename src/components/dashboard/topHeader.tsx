@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  getCurrentUser,
+  logoutUser,
+} from "../utils/auth";
 
 interface TopHeaderProps {
   vesselName: string;
@@ -8,7 +12,13 @@ export default function TopHeader({
   vesselName,
 }: TopHeaderProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [profileOpen, setProfileOpen] = useState(false);
 
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // -----------------------------------------
+  // LIVE UTC CLOCK
+  // -----------------------------------------
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -16,6 +26,64 @@ export default function TopHeader({
 
     return () => clearInterval(timer);
   }, []);
+
+  // -----------------------------------------
+  // CLOSE PROFILE WHEN CLICKING OUTSIDE
+  // -----------------------------------------
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, []);
+
+  // -----------------------------------------
+  // CURRENT USER
+  // -----------------------------------------
+  const user = getCurrentUser();
+
+  // -----------------------------------------
+  // USER INITIALS
+  // -----------------------------------------
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return (
+      parts[0][0] + parts[parts.length - 1][0]
+    ).toUpperCase();
+  };
+
+  const userInitials = user
+    ? getInitials(user.name)
+    : "OP";
+
+  // -----------------------------------------
+  // LOGOUT
+  // -----------------------------------------
+  const handleLogout = () => {
+    logoutUser();
+
+    // Return to Home after logout.
+    window.history.replaceState({}, "", "/");
+    window.location.reload();
+  };
 
   const date = currentTime.toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -35,6 +103,7 @@ export default function TopHeader({
   return (
     <header
       className="
+        relative
         h-[66px]
         w-full
         border-b border-cyan-400/10
@@ -128,7 +197,7 @@ export default function TopHeader({
         </span>
       </div>
 
-      {/* RIGHT — LIVE TIME + VESSEL */}
+      {/* RIGHT — LIVE TIME + VESSEL + USER */}
       <div className="flex items-center gap-8">
 
         {/* Time information */}
@@ -142,6 +211,7 @@ export default function TopHeader({
             "
           >
             Satellite updated:
+
             <span className="ml-2 text-cyan-300">
               {date} • {time} UTC
             </span>
@@ -156,6 +226,7 @@ export default function TopHeader({
             "
           >
             Vessel:
+
             <span className="ml-2 font-semibold text-slate-300">
               {vesselName}
             </span>
@@ -164,6 +235,7 @@ export default function TopHeader({
 
         {/* Alert button */}
         <button
+          type="button"
           className="
             flex
             h-10
@@ -187,26 +259,229 @@ export default function TopHeader({
           <span className="text-sm">△</span>
         </button>
 
-        {/* User / operator */}
+        {/* =========================================
+            USER / OPERATOR PROFILE
+        ========================================= */}
         <div
-          className="
-            flex
-            h-10
-            w-10
-            items-center
-            justify-center
-            rounded-full
-            border
-            border-cyan-400/30
-            bg-cyan-400/8
-            font-mono
-            text-[11px]
-            text-cyan-200
-            shadow-[inset_0_0_12px_rgba(34,211,238,0.08)]
-          "
+          ref={profileRef}
+          className="relative"
         >
-          SK
+          {/* Profile button */}
+          <button
+            type="button"
+            onClick={() => setProfileOpen((open) => !open)}
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-full
+              border
+              border-cyan-400/30
+              bg-cyan-400/8
+              font-mono
+              text-[11px]
+              font-medium
+              text-cyan-200
+              shadow-[inset_0_0_12px_rgba(34,211,238,0.08)]
+              transition
+              duration-200
+              hover:border-cyan-300/60
+              hover:bg-cyan-400/[0.10]
+              hover:text-cyan-100
+              hover:shadow-[0_0_18px_rgba(34,211,238,0.12)]
+            "
+            title="Operator profile"
+          >
+            {userInitials}
+          </button>
+
+          {/* Profile dropdown */}
+          {profileOpen && (
+            <div
+              className="
+                absolute
+                right-0
+                top-14
+                z-50
+                w-[290px]
+                overflow-hidden
+                rounded-xl
+                border
+                border-cyan-400/20
+                bg-[#04111e]
+                shadow-[0_12px_40px_rgba(0,0,0,0.45)]
+              "
+            >
+              {/* Profile header */}
+              <div
+                className="
+                  border-b
+                  border-cyan-400/10
+                  px-5
+                  py-5
+                "
+              >
+                <div className="flex items-center gap-4">
+
+                  {/* Large initials */}
+                  <div
+                    className="
+                      flex
+                      h-12
+                      w-12
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-full
+                      border
+                      border-cyan-400/30
+                      bg-cyan-400/[0.06]
+                      font-mono
+                      text-sm
+                      font-semibold
+                      text-cyan-200
+                      shadow-[inset_0_0_16px_rgba(34,211,238,0.08)]
+                    "
+                  >
+                    {userInitials}
+                  </div>
+
+                  {/* Name + email */}
+                  <div className="min-w-0">
+                    <p
+                      className="
+                        truncate
+                        font-mono
+                        text-[13px]
+                        font-semibold
+                        tracking-[0.04em]
+                        text-slate-100
+                      "
+                    >
+                      {user?.name || "Unknown Operator"}
+                    </p>
+
+                    <p
+                      className="
+                        mt-1
+                        truncate
+                        font-mono
+                        text-[10px]
+                        text-slate-500
+                      "
+                    >
+                      {user?.email || "No email available"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Account information */}
+              <div className="px-5 py-4">
+
+                <p
+                  className="
+                    mb-3
+                    font-mono
+                    text-[9px]
+                    font-semibold
+                    tracking-[0.18em]
+                    text-slate-600
+                  "
+                >
+                  OPERATOR ACCOUNT
+                </p>
+
+                <div className="space-y-3">
+
+                  {/* Account type */}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="
+                        font-mono
+                        text-[10px]
+                        text-slate-500
+                      "
+                    >
+                      Role
+                    </span>
+
+                    <span
+                      className="
+                        font-mono
+                        text-[10px]
+                        text-slate-300
+                      "
+                    >
+                      Operator
+                    </span>
+                  </div>
+
+                  {/* Session */}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="
+                        font-mono
+                        text-[10px]
+                        text-slate-500
+                      "
+                    >
+                      Session
+                    </span>
+
+                    <span
+                      className="
+                        flex
+                        items-center
+                        gap-1.5
+                        font-mono
+                        text-[10px]
+                        text-emerald-400
+                      "
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      AUTHENTICATED
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Logout */}
+              <div className="border-t border-cyan-400/10 p-3">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="
+                    w-full
+                    rounded-lg
+                    border
+                    border-red-400/15
+                    bg-red-400/[0.02]
+                    px-4
+                    py-2.5
+                    text-left
+                    font-mono
+                    text-[10px]
+                    font-semibold
+                    tracking-[0.14em]
+                    text-red-300/80
+                    transition
+                    duration-200
+                    hover:border-red-400/30
+                    hover:bg-red-400/[0.06]
+                    hover:text-red-300
+                  "
+                >
+                  LOG OUT
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
       </div>
     </header>
   );

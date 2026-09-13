@@ -44,7 +44,9 @@ export default function Home({
       <div className="relative z-10 min-h-screen px-5 py-5 sm:px-8 sm:py-8 lg:px-10 lg:py-8">
 
         {/* HEADER */}
-        <HomeHeader />
+        <HomeHeader
+          onLogin={onEnterMissionControl}
+        />
 
         {/* MAIN TWO-COLUMN AREA */}
         <section
@@ -84,7 +86,6 @@ export default function Home({
                 text-slate-700
               "
             >
-             
             </div>
 
           </div>
