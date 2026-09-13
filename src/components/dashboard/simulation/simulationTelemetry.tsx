@@ -29,9 +29,21 @@ export default function SimulationTelemetry({
 }: SimulationTelemetryProps) {
   return (
     <section className="rounded-xl border border-cyan-400/15 bg-[#04111d] p-5 shadow-[0_0_30px_rgba(0,180,255,0.03)]">
-      <h2 className="font-mono text-[13px] tracking-[0.08em] text-slate-200">
-        LIVE TELEMETRY
-      </h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-mono text-[13px] tracking-[0.08em] text-slate-200">
+            LIVE MISSION TELEMETRY
+          </h2>
+
+          <p className="mt-1 font-mono text-[8px] tracking-[0.08em] text-slate-600">
+            VESSEL NAVIGATION STATUS
+          </p>
+        </div>
+
+        <span className="rounded border border-emerald-400/20 bg-emerald-400/[0.05] px-2 py-1 font-mono text-[8px] tracking-[0.08em] text-emerald-300">
+          LIVE
+        </span>
+      </div>
 
       <div className="mt-4">
         <Row
@@ -41,7 +53,9 @@ export default function SimulationTelemetry({
 
         <Row
           label="Heading"
-          value={`${String(Math.round(telemetry.heading)).padStart(3, "0")}° NE`}
+          value={`${String(
+            Math.round(telemetry.heading),
+          ).padStart(3, "0")}° NE`}
         />
 
         <Row
@@ -73,6 +87,24 @@ export default function SimulationTelemetry({
           label="ETA"
           value={`${telemetry.etaHours.toFixed(1)} h`}
         />
+      </div>
+
+      <div className="mt-4 border-t border-cyan-400/[0.08] pt-3">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[8px] tracking-[0.08em] text-slate-600">
+            MISSION-AWARE MONITORING
+          </span>
+
+          <span className="font-mono text-[8px] text-cyan-400/70">
+            ACTIVE
+          </span>
+        </div>
+
+        <p className="mt-2 font-mono text-[8px] leading-relaxed text-slate-600">
+          Telemetry continuously supports route risk
+          assessment, mission feasibility, and adaptive
+          replanning.
+        </p>
       </div>
     </section>
   );

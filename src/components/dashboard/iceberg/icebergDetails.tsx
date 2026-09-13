@@ -16,14 +16,22 @@ export default function IcebergDetails({
 
   return (
     <section className="rounded-2xl border border-cyan-400/15 bg-[#04111d] p-5">
+      {/* HEADER */}
+
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-[25px] font-medium tracking-tight text-white">
-            {iceberg.name}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-[25px] font-medium tracking-tight text-white">
+              {iceberg.name}
+            </h2>
+
+            <span className="rounded-md border border-cyan-400/20 bg-cyan-400/5 px-2 py-1 font-mono text-[9px] font-semibold tracking-wider text-cyan-300">
+              {iceberg.id}
+            </span>
+          </div>
 
           <p className="mt-1 font-mono text-[11px] text-slate-500">
-            Calved: {iceberg.calvedFrom} • Detected: SAR
+            Calved: {iceberg.calvedFrom} • Detected: Sentinel-1 SAR
           </p>
         </div>
 
@@ -34,27 +42,65 @@ export default function IcebergDetails({
         </span>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-cyan-400/10 bg-[#061522] p-3">
-          <p className="font-mono text-[10px] text-slate-500">
-            LATITUDE
-          </p>
+      {/* CURRENT POSITION */}
 
-          <p className="mt-2 text-[15px] font-medium text-slate-200">
-            {iceberg.latitude.toFixed(2)}°S
-          </p>
+      <div className="mt-5">
+        <p className="mb-2 font-mono text-[10px] font-semibold tracking-[0.12em] text-cyan-400">
+          CURRENT POSITION
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-cyan-400/10 bg-[#061522] p-3">
+            <p className="font-mono text-[10px] text-slate-500">
+              LATITUDE
+            </p>
+
+            <p className="mt-2 text-[15px] font-medium text-slate-200">
+              {iceberg.latitude.toFixed(2)}°S
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-cyan-400/10 bg-[#061522] p-3">
+            <p className="font-mono text-[10px] text-slate-500">
+              LONGITUDE
+            </p>
+
+            <p className="mt-2 text-[15px] font-medium text-slate-200">
+              {iceberg.longitude.toFixed(2)}°E
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div className="rounded-xl border border-cyan-400/10 bg-[#061522] p-3">
-          <p className="font-mono text-[10px] text-slate-500">
-            LONGITUDE
-          </p>
+      {/* DETECTION */}
 
-          <p className="mt-2 text-[15px] font-medium text-slate-200">
-            {iceberg.longitude.toFixed(2)}°E
-          </p>
+      <div className="mt-4 rounded-xl border border-cyan-400/10 bg-[#061522] p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-mono text-[10px] text-slate-500">
+              DETECTION TIME
+            </p>
+
+            <p className="mt-2 font-mono text-[12px] font-medium text-slate-200">
+              {iceberg.lastUpdated}
+            </p>
+          </div>
+
+          <div className="text-right">
+            <p className="font-mono text-[10px] text-slate-500">
+              CONFIDENCE
+            </p>
+
+            <p className="mt-2 font-mono text-[12px] font-medium text-cyan-300">
+              {iceberg.detectionConfidence}%
+            </p>
+          </div>
         </div>
+      </div>
 
+      {/* PHYSICAL CHARACTERISTICS */}
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-cyan-400/10 bg-[#061522] p-3">
           <p className="font-mono text-[10px] text-slate-500">
             DIMENSIONS

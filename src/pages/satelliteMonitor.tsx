@@ -16,7 +16,7 @@ export default function SatelliteMonitor() {
           </h1>
 
           <p className="mt-1 whitespace-nowrap font-mono text-[10px] tracking-[0.12em] text-slate-500">
-            Multi-Source Observation Analysis
+            Sentinel-1 SAR Observation & Mission Impact Analysis
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export default function SatelliteMonitor() {
 
           <div className="hidden shrink-0 text-right lg:block">
             <p className="whitespace-nowrap font-mono text-[9px] text-slate-500">
-              Satellite updated:
+              Sentinel-1 updated:
               <span className="ml-2 text-cyan-300">
                 10 SEP 2026 • 18:42 UTC
               </span>
@@ -74,10 +74,10 @@ export default function SatelliteMonitor() {
         <div className="space-y-4">
 
           {/* =================================================
-              SATELLITE SOURCES
+              SENTINEL-1 OBSERVATION
           ================================================= */}
 
-          <section className="grid min-w-0 grid-cols-3 gap-4">
+          <section className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-3">
 
             {/* SENTINEL-1 */}
 
@@ -86,7 +86,7 @@ export default function SatelliteMonitor() {
                 name="SENTINEL-1"
                 type="SAR / C-Band Radar"
                 icon="radar"
-                latestObservation="08 SEP 2026 • 18:42 UTC"
+                latestObservation="10 SEP 2026 • 18:42 UTC"
                 orbit="Near-Polar Orbit • 693 km"
                 coverage="400 km swath"
                 resolution="10 m / 40 m"
@@ -95,35 +95,35 @@ export default function SatelliteMonitor() {
               />
             </div>
 
-            {/* MODIS / TERRA */}
+            {/* SAR PROCESSING */}
 
             <div className="min-w-0">
               <SatelliteSourceCard
-                name="MODIS / TERRA"
-                type="Multispectral Optical"
-                icon="optical"
-                latestObservation="08 SEP 2026 • 14:18 UTC"
-                orbit="Sun-Synchronous • 705 km"
-                coverage="2,330 km swath"
-                resolution="250 m – 1 km"
-                passes="1 pass / day"
-                status="ACTIVE"
+                name="SAR PROCESSING"
+                type="Ice Detection + Change Analysis"
+                icon="ai"
+                latestObservation="10 SEP 2026 • 18:42 UTC"
+                orbit="POLARIS-AI Processing Pipeline"
+                coverage="Mission Area"
+                resolution="10 m effective"
+                passes="Processed per pass"
+                status="COMPLETE"
               />
             </div>
 
-            {/* AI PROCESSED */}
+            {/* MISSION IMPACT */}
 
             <div className="min-w-0">
               <SatelliteSourceCard
-                name="AI PROCESSED"
-                type="Fusion + Segmentation"
+                name="MISSION IMPACT"
+                type="Risk + Mission Feasibility"
                 icon="ai"
-                latestObservation="08 SEP 2026 • 18:42 UTC"
-                orbit="POLARIS-AI v2.4 • Edge TPU"
-                coverage="1,250 × 1,250 km"
-                resolution="10 m effective"
-                passes="Updated per pass"
-                status="COMPLETE"
+                latestObservation="10 SEP 2026 • 18:42 UTC"
+                orbit="Adaptive Mission Planner"
+                coverage="Active Mission Waypoints"
+                resolution="Waypoint-Level Analysis"
+                passes="Re-evaluated per observation"
+                status="ACTIVE"
               />
             </div>
 
@@ -136,7 +136,7 @@ export default function SatelliteMonitor() {
           <SARImageAnalysis />
 
           {/* =================================================
-              UPCOMING PASSES
+              UPCOMING SENTINEL-1 PASSES
           ================================================= */}
 
           <UpcomingSatellitePasses />

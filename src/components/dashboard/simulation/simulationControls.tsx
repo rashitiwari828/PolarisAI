@@ -30,9 +30,15 @@ export default function SimulationControls({
 
   return (
     <section className="rounded-xl border border-cyan-400/15 bg-[#04111d] p-5 shadow-[0_0_30px_rgba(0,180,255,0.03)]">
-      <h2 className="font-mono text-[13px] tracking-[0.08em] text-slate-200">
-        DEMO CONTROLS
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-mono text-[13px] tracking-[0.08em] text-slate-200">
+          MISSION CONTROLS
+        </h2>
+
+        <span className="font-mono text-[8px] tracking-[0.1em] text-cyan-500">
+          ADAPTIVE
+        </span>
+      </div>
 
       <div className="mt-4 space-y-2">
         <button
@@ -85,7 +91,7 @@ export default function SimulationControls({
             }
           `}
         >
-          ① TRIGGER OBSTRUCTION
+          ① NEW SENTINEL-1 OBSERVATION
         </button>
 
         <button
@@ -110,7 +116,7 @@ export default function SimulationControls({
             }
           `}
         >
-          ② ANALYZE ALTERNATIVES
+          ② RE-EVALUATE MISSION
         </button>
 
         <button
@@ -135,7 +141,7 @@ export default function SimulationControls({
             }
           `}
         >
-          ③ ACCEPT NEW ROUTE
+          ③ ACCEPT NEW MISSION PLAN
         </button>
 
         <button
@@ -144,7 +150,7 @@ export default function SimulationControls({
           className="flex h-11 w-full items-center justify-center rounded-xl border border-slate-800 text-slate-500 transition hover:border-slate-600 hover:text-slate-300"
         >
           <span className="font-mono text-[10px]">
-            ↻ RESET
+            ↻ RESET MISSION
           </span>
         </button>
       </div>

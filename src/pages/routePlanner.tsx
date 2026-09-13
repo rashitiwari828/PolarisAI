@@ -6,6 +6,27 @@ import RouteParameters from "../components/dashboard/routePlanner/routeParameter
 import RouteResults from "../components/dashboard/routePlanner/routeResults";
 import RouteExplainability from "../components/dashboard/routePlanner/routeExplanability";
 
+interface Waypoint {
+  id: number;
+  name: string;
+  location: string;
+  type: "MANDATORY" | "OPTIONAL";
+}
+
+interface MissionConfiguration {
+  startPoint: {
+    name: string;
+    location: string;
+  };
+  destination: {
+    name: string;
+    location: string;
+  };
+  waypoints: Waypoint[];
+  missionPriority: string;
+  optimizationPreference: string;
+}
+
 type PlannerStage =
   | "planner"
   | "generating"
@@ -19,11 +40,27 @@ interface RoutePlannerProps {
 export default function RoutePlanner({
   onNavigateToAlerts,
 }: RoutePlannerProps) {
-  const [stage, setStage] = useState<PlannerStage>("planner");
+  const [stage, setStage] =
+    useState<PlannerStage>("planner");
+
+  const [missionConfiguration, setMissionConfiguration] =
+    useState<MissionConfiguration | null>(null);
 
   const generating = stage === "generating";
+
   const resultsVisible =
-    stage === "results" || stage === "explainability";
+    stage === "results" ||
+    stage === "explainability";
+
+  const handleMissionChange = (
+    mission: MissionConfiguration,
+  ) => {
+    setMissionConfiguration(mission);
+  };
+
+  const handleGenerate = () => {
+    setStage("generating");
+  };
 
   useEffect(() => {
     if (!generating) return;
@@ -37,12 +74,18 @@ export default function RoutePlanner({
     };
   }, [generating]);
 
+  /* =========================================================
+     EXPLAINABILITY VIEW
+  ========================================================= */
+
   if (stage === "explainability") {
     return (
       <div className="flex h-full min-h-0 flex-col bg-[#020913] text-slate-100">
-        <RoutePlannerHeader />
+        <RoutePlannerHeader
+          onNavigateToAlerts={onNavigateToAlerts}
+        />
 
-        <main className="min-h-0 flex-1 overflow-hidden">
+        <main className="min-h-0 flex-1 overflow-hidden p-4">
           <RouteExplainability
             onBack={() => setStage("results")}
           />
@@ -57,28 +100,44 @@ export default function RoutePlanner({
           ROUTE PLANNER HEADER
       ===================================================== */}
 
-      <RoutePlannerHeader />
+      <RoutePlannerHeader
+        onNavigateToAlerts={onNavigateToAlerts}
+      />
 
       {/* =====================================================
           CONTENT
       ===================================================== */}
 
       <main className="min-h-0 flex-1 overflow-hidden">
-        <div className="flex h-full min-h-0 flex-col xl:flex-row">
+        <div className="flex h-full min-h-0 flex-col gap-5 p-4 xl:flex-row">
           {/* =================================================
-              LEFT CONFIGURATION PANEL
+              LEFT MISSION CONFIGURATION PANEL
           ================================================= */}
 
-          <aside className="w-full shrink-0 overflow-y-auto border-r border-cyan-400/10 bg-[#020b16] p-4 xl:w-[320px]">
+          <aside
+            className="
+              w-full
+              shrink-0
+              overflow-y-auto
+              rounded-2xl
+              border
+              border-cyan-400/10
+              bg-[#020b16]
+              p-5
+              shadow-[0_0_30px_rgba(0,180,255,0.025)]
+              xl:w-[420px]
+            "
+          >
             {stage === "results" ? (
               <RouteResults
                 onExplain={() => setStage("explainability")}
               />
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <RouteConfiguration
                   generating={generating}
-                  onGenerate={() => setStage("generating")}
+                  onGenerate={handleGenerate}
+                  onMissionChange={handleMissionChange}
                 />
 
                 <RouteParameters />
@@ -90,12 +149,52 @@ export default function RoutePlanner({
               MAP
           ================================================= */}
 
-          <section className="relative min-h-[520px] min-w-0 flex-1 overflow-hidden bg-[#020913]">
-            <RoutePlannerMap
-              generating={generating}
-              resultsVisible={resultsVisible}
-              showRoutes={resultsVisible}
-            />
+          <section
+            className="
+              relative
+              min-h-[520px]
+              min-w-0
+              flex-1
+              overflow-hidden
+              rounded-2xl
+              border
+              border-cyan-400/10
+              bg-[#020913]
+              p-3
+              shadow-[0_0_35px_rgba(0,180,255,0.035)]
+            "
+          >
+            <div className="h-full min-h-[494px] overflow-hidden rounded-xl">
+              <RoutePlannerMap
+                generating={generating}
+                resultsVisible={resultsVisible}
+                showRoutes={resultsVisible}
+              />
+
+              {/* =================================================
+                  MISSION STATUS OVERLAY
+              ================================================= */}
+
+              {missionConfiguration && !resultsVisible && (
+                <div className="pointer-events-none absolute left-5 top-5 rounded-xl border border-cyan-400/15 bg-[#020b16]/90 px-4 py-3 backdrop-blur-sm">
+                  <p className="font-mono text-[8px] tracking-[0.14em] text-cyan-400">
+                    ACTIVE MISSION
+                  </p>
+
+                  <p className="mt-1 font-mono text-[11px] text-slate-200">
+                    {missionConfiguration.waypoints.length} SCIENTIFIC
+                    {" "}
+                    {missionConfiguration.waypoints.length === 1
+                      ? "OBJECTIVE"
+                      : "OBJECTIVES"}
+                  </p>
+
+                  <p className="mt-1 font-mono text-[8px] text-slate-500">
+                    {missionConfiguration.missionPriority.toUpperCase()}
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
         </div>
       </main>
@@ -107,21 +206,26 @@ export default function RoutePlanner({
    ROUTE PLANNER HEADER
 ========================================================= */
 
-function RoutePlannerHeader() {
+function RoutePlannerHeader({
+  onNavigateToAlerts,
+}: {
+  onNavigateToAlerts: () => void;
+}) {
   return (
     <header className="flex min-h-[70px] shrink-0 items-center justify-between border-b border-cyan-400/10 bg-[#020b16] px-6">
       <div>
         <h1 className="font-mono text-[17px] tracking-[0.12em] text-slate-100">
-          AI ROUTE PLANNER
+          AI MISSION PLANNER
         </h1>
 
         <p className="mt-1 font-mono text-[10px] tracking-[0.12em] text-slate-500">
-          Optimal Path Optimization
+          Adaptive Mission-Aware Navigation
         </p>
       </div>
 
       <div className="flex items-center gap-8">
         {/* LIVE */}
+
         <div className="hidden items-center gap-2 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.04] px-4 py-2.5 md:flex">
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]" />
 
@@ -130,10 +234,11 @@ function RoutePlannerHeader() {
           </span>
         </div>
 
-        {/* SATELLITE */}
+        {/* SENTINEL-1 */}
+
         <div className="hidden text-right lg:block">
           <p className="font-mono text-[9px] text-slate-500">
-            Satellite updated:
+            Sentinel-1 updated:
             <span className="ml-2 text-cyan-300">
               10 SEP 2026 • 18:42 UTC
             </span>
@@ -148,11 +253,33 @@ function RoutePlannerHeader() {
         </div>
 
         {/* ALERT */}
-        <button className="hidden h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/15 bg-[#061522] text-slate-400 transition hover:border-cyan-400/40 hover:text-cyan-300 sm:flex">
+
+        <button
+          type="button"
+          onClick={onNavigateToAlerts}
+          className="
+            hidden
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-cyan-400/15
+            bg-[#061522]
+            text-slate-400
+            transition
+            hover:border-cyan-400/40
+            hover:text-cyan-300
+            sm:flex
+          "
+          aria-label="Open alerts"
+        >
           △
         </button>
 
         {/* USER */}
+
         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/[0.08] font-mono text-[10px] text-cyan-200">
           SK
         </div>

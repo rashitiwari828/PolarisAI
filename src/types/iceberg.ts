@@ -1,9 +1,16 @@
 export type IcebergRisk = "LOW" | "MODERATE" | "HIGH";
 
-export interface IcebergPosition {
-  latitude: number;
-  longitude: number;
-  hours: number;
+export interface TrajectoryPrediction {
+  iceberg_id: string;
+  prediction_time: string;
+  horizon_hours: 6 | 12 | 24 | 48;
+  predicted_latitude: number;
+  predicted_longitude: number;
+  uncertainty_km: number | null;
+  prediction_method:
+    | "Dead Reckoning"
+    | "XGBoost"
+    | "Unavailable";
 }
 
 export interface TrackedIceberg {
@@ -27,7 +34,7 @@ export interface TrackedIceberg {
 
   detectionConfidence: number;
 
-  trajectory: IcebergPosition[];
+  trajectory: TrajectoryPrediction[];
 
   collisionProbability: number;
   collisionDistance: string;

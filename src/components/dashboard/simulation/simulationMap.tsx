@@ -16,14 +16,12 @@ interface SimulationMapProps {
   phase: SimulationPhase;
 }
 
-function coordinatesToGeoJSON(
-  coordinates: Coordinate[],
-): GeoJSON.Feature<GeoJSON.LineString> {
+function coordinatesToGeoJSON(coordinates: Coordinate[]) {
   return {
-    type: "Feature",
+    type: "Feature" as const,
     properties: {},
     geometry: {
-      type: "LineString",
+      type: "LineString" as const,
       coordinates: coordinates.map((point) => [
         point.lon,
         point.lat,
@@ -32,15 +30,16 @@ function coordinatesToGeoJSON(
   };
 }
 
-function pointToGeoJSON(
-  point: Coordinate,
-): GeoJSON.Feature<GeoJSON.Point> {
+function pointToGeoJSON(point: Coordinate) {
   return {
-    type: "Feature",
+    type: "Feature" as const,
     properties: {},
     geometry: {
-      type: "Point",
-      coordinates: [point.lon, point.lat],
+      type: "Point" as const,
+      coordinates: [
+        point.lon,
+        point.lat,
+      ],
     },
   };
 }
@@ -52,15 +51,11 @@ export default function SimulationMap({
   obstruction,
   phase,
 }: SimulationMapProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef =
+    useRef<HTMLDivElement | null>(null);
 
-  const mapRef = useRef<maplibregl.Map | null>(null);
-
-  const vesselMarkerRef =
-    useRef<maplibregl.Marker | null>(null);
-
-  const obstructionMarkerRef =
-    useRef<maplibregl.Marker | null>(null);
+  const mapRef =
+    useRef<maplibregl.Map | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -85,7 +80,7 @@ export default function SimulationMap({
             ],
             tileSize: 256,
             attribution:
-              '&copy; OpenStreetMap contributors &copy; CARTO',
+              "&copy; OpenStreetMap contributors &copy; CARTO",
           },
         },
 
@@ -106,9 +101,7 @@ export default function SimulationMap({
       ],
 
       zoom: 4.3,
-
       minZoom: 2,
-
       maxZoom: 11,
     });
 
@@ -123,11 +116,14 @@ export default function SimulationMap({
 
     map.on("load", () => {
       /*
-       * NORMAL ROUTE
+       * NORMAL MISSION ROUTE
        */
+
       map.addSource("normal-route", {
         type: "geojson",
-        data: coordinatesToGeoJSON(normalRoute),
+        data: coordinatesToGeoJSON(
+          normalRoute,
+        ),
       });
 
       map.addLayer({
@@ -143,11 +139,14 @@ export default function SimulationMap({
       });
 
       /*
-       * ALTERNATIVE ROUTE
+       * UPDATED MISSION ROUTE
        */
+
       map.addSource("alternative-route", {
         type: "geojson",
-        data: coordinatesToGeoJSON(alternativeRoute),
+        data: coordinatesToGeoJSON(
+          alternativeRoute,
+        ),
       });
 
       map.addLayer({
@@ -167,9 +166,12 @@ export default function SimulationMap({
       /*
        * VESSEL
        */
+
       map.addSource("vessel", {
         type: "geojson",
-        data: pointToGeoJSON(vesselPosition),
+        data: pointToGeoJSON(
+          vesselPosition,
+        ),
       });
 
       map.addLayer({
@@ -197,11 +199,14 @@ export default function SimulationMap({
       });
 
       /*
-       * OBSTRUCTION
+       * SENTINEL-1 ICE CHANGE LOCATION
        */
+
       map.addSource("obstruction", {
         type: "geojson",
-        data: pointToGeoJSON(obstruction),
+        data: pointToGeoJSON(
+          obstruction,
+        ),
       });
 
       map.addLayer({
@@ -211,7 +216,7 @@ export default function SimulationMap({
         paint: {
           "circle-radius": 28,
           "circle-color": "#ef4444",
-          "circle-opacity": 0.10,
+          "circle-opacity": 0.1,
           "circle-stroke-color": "#ef4444",
           "circle-stroke-width": 1.5,
           "circle-stroke-opacity": 0.7,
@@ -237,14 +242,39 @@ export default function SimulationMap({
       });
 
       /*
+       * ICE CHANGE LABEL
+       */
+
+      map.addLayer({
+        id: "obstruction-label",
+        type: "symbol",
+        source: "obstruction",
+        layout: {
+          "text-field":
+            "SENTINEL-1 ICE CHANGE",
+          "text-size": 9,
+          "text-offset": [0, -3],
+          "text-anchor": "bottom",
+          visibility: "none",
+        },
+        paint: {
+          "text-color": "#fb7185",
+          "text-halo-color": "#020913",
+          "text-halo-width": 1.5,
+        },
+      });
+
+      /*
        * VESSEL LABEL
        */
+
       map.addLayer({
         id: "vessel-label",
         type: "symbol",
         source: "vessel",
         layout: {
-          "text-field": "MV SAGAR KANYA",
+          "text-field":
+            "MV SAGAR KANYA",
           "text-size": 10,
           "text-offset": [0, -2],
           "text-anchor": "bottom",
@@ -257,8 +287,51 @@ export default function SimulationMap({
       });
 
       /*
+       * SCIENTIFIC WAYPOINT WP-02
+       */
+
+      map.addSource("wp02", {
+        type: "geojson",
+        data: pointToGeoJSON({
+          lat: -67.15,
+          lon: 76.9,
+        }),
+      });
+
+      map.addLayer({
+        id: "wp02-point",
+        type: "circle",
+        source: "wp02",
+        paint: {
+          "circle-radius": 5,
+          "circle-color": "#fbbf24",
+          "circle-stroke-color": "#fef3c7",
+          "circle-stroke-width": 1,
+        },
+      });
+
+      map.addLayer({
+        id: "wp02-label",
+        type: "symbol",
+        source: "wp02",
+        layout: {
+          "text-field":
+            "WP-02 • OCEANOGRAPHIC SURVEY",
+          "text-size": 8,
+          "text-offset": [0, 2],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#fbbf24",
+          "text-halo-color": "#020913",
+          "text-halo-width": 1,
+        },
+      });
+
+      /*
        * DESTINATION
        */
+
       map.addSource("destination", {
         type: "geojson",
         data: pointToGeoJSON({
@@ -284,7 +357,8 @@ export default function SimulationMap({
         type: "symbol",
         source: "destination",
         layout: {
-          "text-field": "BHARATI STATION",
+          "text-field":
+            "BHARATI STATION",
           "text-size": 9,
           "text-offset": [0, 1.8],
         },
@@ -298,17 +372,17 @@ export default function SimulationMap({
 
     mapRef.current = map;
 
-    const resizeObserver = new ResizeObserver(() => {
-      map.resize();
-    });
+    const resizeObserver =
+      new ResizeObserver(() => {
+        map.resize();
+      });
 
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(
+      containerRef.current,
+    );
 
     return () => {
       resizeObserver.disconnect();
-
-      vesselMarkerRef.current?.remove();
-      obstructionMarkerRef.current?.remove();
 
       map.remove();
 
@@ -317,8 +391,9 @@ export default function SimulationMap({
   }, []);
 
   /*
-   * Update vessel position.
+   * UPDATE VESSEL POSITION
    */
+
   useEffect(() => {
     const map = mapRef.current;
 
@@ -334,16 +409,23 @@ export default function SimulationMap({
       return;
     }
 
-    source.setData(pointToGeoJSON(vesselPosition));
+    source.setData(
+      pointToGeoJSON(
+        vesselPosition,
+      ),
+    );
 
-    /*
-     * Keep vessel in view without constantly zooming.
-     */
     const center = map.getCenter();
 
     const distance =
-      Math.abs(center.lng - vesselPosition.lon) +
-      Math.abs(center.lat - vesselPosition.lat);
+      Math.abs(
+        center.lng -
+          vesselPosition.lon,
+      ) +
+      Math.abs(
+        center.lat -
+          vesselPosition.lat,
+      );
 
     if (distance > 4) {
       map.easeTo({
@@ -358,8 +440,9 @@ export default function SimulationMap({
   }, [vesselPosition]);
 
   /*
-   * Show obstruction when detected.
+   * SENTINEL-1 ICE CHANGE VISIBILITY
    */
+
   useEffect(() => {
     const map = mapRef.current;
 
@@ -377,26 +460,27 @@ export default function SimulationMap({
       ? "visible"
       : "none";
 
-    if (map.getLayer("obstruction-zone")) {
-      map.setLayoutProperty(
-        "obstruction-zone",
-        "visibility",
-        visibility,
-      );
-    }
+    const layers = [
+      "obstruction-zone",
+      "obstruction-point",
+      "obstruction-label",
+    ];
 
-    if (map.getLayer("obstruction-point")) {
-      map.setLayoutProperty(
-        "obstruction-point",
-        "visibility",
-        visibility,
-      );
-    }
+    layers.forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(
+          layerId,
+          "visibility",
+          visibility,
+        );
+      }
+    });
   }, [phase]);
 
   /*
-   * Switch between normal and alternative route.
+   * ROUTE SWITCHING
    */
+
   useEffect(() => {
     const map = mapRef.current;
 
@@ -408,7 +492,11 @@ export default function SimulationMap({
       phase === "rerouting" ||
       phase === "accepted";
 
-    if (map.getLayer("alternative-route-line")) {
+    if (
+      map.getLayer(
+        "alternative-route-line",
+      )
+    ) {
       map.setLayoutProperty(
         "alternative-route-line",
         "visibility",
@@ -418,14 +506,31 @@ export default function SimulationMap({
       );
     }
 
-    if (map.getLayer("normal-route-line")) {
+    if (
+      map.getLayer(
+        "normal-route-line",
+      )
+    ) {
       map.setPaintProperty(
         "normal-route-line",
         "line-opacity",
-        alternativeVisible ? 0.12 : 0.45,
+        alternativeVisible
+          ? 0.12
+          : 0.45,
       );
     }
   }, [phase]);
+
+  const missionStatus =
+    phase === "accepted"
+      ? "MISSION PLAN ACCEPTED"
+      : phase === "rerouting"
+        ? "NEW MISSION PLAN"
+        : phase === "analyzing"
+          ? "MISSION RE-EVALUATION"
+          : phase === "obstruction"
+            ? "MISSION IMPACT DETECTED"
+            : "MISSION IN PROGRESS";
 
   return (
     <div
@@ -433,29 +538,107 @@ export default function SimulationMap({
       className="absolute inset-0"
     >
       {/* MAP STATUS */}
+
       <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-lg border border-cyan-400/20 bg-[#020913]/90 px-3 py-2 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
+          <span
+            className={`h-2 w-2 rounded-full ${
+              phase === "obstruction"
+                ? "bg-rose-400 shadow-[0_0_10px_#fb7185]"
+                : phase === "analyzing"
+                  ? "bg-amber-400 shadow-[0_0_10px_#fbbf24]"
+                  : "bg-emerald-400 shadow-[0_0_10px_#34d399]"
+            }`}
+          />
 
           <span className="font-mono text-[9px] tracking-[0.08em] text-slate-300">
             LIVE GEOINT MAP
           </span>
         </div>
 
-        <p className="mt-1 font-mono text-[8px] text-slate-600">
-          Antarctic Navigation Zone
+        <p className="mt-1 font-mono text-[8px] text-cyan-400/80">
+          {missionStatus}
+        </p>
+
+        <p className="mt-0.5 font-mono text-[8px] text-slate-600">
+          Sentinel-1 SAR • Antarctic
+          Navigation Zone
         </p>
       </div>
 
-      {/* COORDINATE DISPLAY */}
+      {/* CURRENT MISSION */}
+
+      <div className="pointer-events-none absolute right-4 top-4 z-10 rounded-lg border border-cyan-400/15 bg-[#020913]/90 px-3 py-2 backdrop-blur-md">
+        <p className="font-mono text-[8px] tracking-[0.1em] text-slate-600">
+          CURRENT MISSION
+        </p>
+
+        <p className="mt-1 font-mono text-[10px] text-slate-300">
+          ANTARCTIC SCIENTIFIC SURVEY
+        </p>
+
+        <div className="mt-2 flex gap-2">
+          <span className="rounded border border-emerald-400/20 bg-emerald-400/[0.05] px-2 py-1 font-mono text-[8px] text-emerald-300">
+            2 MANDATORY
+          </span>
+
+          <span
+            className={`rounded border px-2 py-1 font-mono text-[8px] ${
+              phase === "accepted"
+                ? "border-slate-600 bg-slate-800/30 text-slate-500"
+                : "border-amber-400/20 bg-amber-400/[0.05] text-amber-300"
+            }`}
+          >
+            {phase === "accepted"
+              ? "WP-03 SKIPPED"
+              : "1 OPTIONAL"}
+          </span>
+        </div>
+      </div>
+
+      {/* COORDINATES */}
+
       <div className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-lg border border-cyan-400/15 bg-[#020913]/90 px-3 py-2 backdrop-blur-md">
         <p className="font-mono text-[9px] text-cyan-300">
-          {Math.abs(vesselPosition.lat).toFixed(2)}°
-          {vesselPosition.lat < 0 ? "S" : "N"}{" "}
-          {Math.abs(vesselPosition.lon).toFixed(2)}°
-          {vesselPosition.lon < 0 ? "W" : "E"}
+          {Math.abs(
+            vesselPosition.lat,
+          ).toFixed(2)}
+          °
+          {vesselPosition.lat < 0
+            ? "S"
+            : "N"}{" "}
+          {Math.abs(
+            vesselPosition.lon,
+          ).toFixed(2)}
+          °
+          {vesselPosition.lon < 0
+            ? "W"
+            : "E"}
         </p>
       </div>
+
+      {/* SENTINEL-1 ALERT */}
+
+      {(phase === "obstruction" ||
+        phase === "analyzing" ||
+        phase === "rerouting" ||
+        phase === "accepted") && (
+        <div className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg border border-rose-400/20 bg-[#020913]/90 px-3 py-2 backdrop-blur-md">
+          <p className="font-mono text-[8px] tracking-[0.08em] text-rose-300">
+            SENTINEL-1 ALERT
+          </p>
+
+          <p className="mt-1 font-mono text-[9px] text-slate-400">
+            Ice change detected near
+            WP-02
+          </p>
+
+          <p className="mt-1 font-mono text-[8px] text-slate-600">
+            Mission impact assessment
+            active
+          </p>
+        </div>
+      )}
     </div>
   );
 }
